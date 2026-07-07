@@ -1,58 +1,65 @@
 package com.messageapp.service;
 
-import com.messageapp.dto.MessageRequest;
-import com.messageapp.model.Message;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.messageapp.dto.MessageRequest;
+import com.messageapp.exception.ResourceNotFoundException;
+import com.messageapp.model.Message;
+import com.messageapp.repository.MessageRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class MessageService {
-    private final Map<Long, Message> messages = new ConcurrentHashMap<>();
-    private final AtomicLong idCounter = new AtomicLong(1);
 
-    public List<Message> getAllByUser(Long userId) {
-        return messages.values().stream()
-                .filter(m -> m.getUserId().equals(userId))
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .collect(Collectors.toList());
+    private final MessageRepository messageRepository;
+
+    public List<Message> getAllByUser(String userId) {
+        return messageRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    public Message getById(Long id, Long userId) {
-        Message message = messages.get(id);
-        if (message == null || !message.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("Message not found");
+    public Message getById(String id, String userId) {
+        Message message = messageRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+
+        if (!message.getUserId().equals(userId)) {
+            throw new ResourceNotFoundException("Message not found");
         }
+
         return message;
     }
 
-    public Message create(MessageRequest request, Long userId) {
-        Message message = new Message(idCounter.getAndIncrement(), request.getTitle(), request.getBody(), userId);
-        messages.put(message.getId(), message);
-        return message;
+    public Message create(MessageRequest request, String userId) {
+
+        Message message = Message.builder()
+                .title(request.title())
+                .body(request.body())
+                .userId(userId)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        return messageRepository.save(message);
     }
 
-    public Message update(Long id, MessageRequest request, Long userId) {
-        Message message = messages.get(id);
-        if (message == null || !message.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("Message not found");
-        }
-        message.setTitle(request.getTitle());
-        message.setBody(request.getBody());
+    public Message update(String id, MessageRequest request, String userId) {
+
+        Message message = getById(id, userId);
+
+        message.setTitle(request.title());
+        message.setBody(request.body());
         message.setUpdatedAt(LocalDateTime.now());
-        return message;
+
+        return messageRepository.save(message);
     }
 
-    public void delete(Long id, Long userId) {
-        Message message = messages.get(id);
-        if (message == null || !message.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("Message not found");
-        }
-        messages.remove(id);
+    public void delete(String id, String userId) {
+
+        Message message = getById(id, userId);
+        messageRepository.delete(message);
     }
 }

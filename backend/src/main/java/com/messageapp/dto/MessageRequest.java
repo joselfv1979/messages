@@ -1,11 +1,13 @@
 package com.messageapp.dto;
 
-public class MessageRequest {
-    private String title;
-    private String body;
+import jakarta.validation.constraints.NotBlank;
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getBody() { return body; }
-    public void setBody(String body) { this.body = body; }
-}
+public record MessageRequest(
+
+    @NotBlank
+    String title,
+
+    @NotBlank
+    String body
+
+) {}

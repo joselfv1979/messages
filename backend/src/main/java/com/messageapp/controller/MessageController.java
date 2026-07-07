@@ -1,15 +1,25 @@
 package com.messageapp.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.messageapp.dto.MessageRequest;
+import com.messageapp.exception.UnauthorizedException;
 import com.messageapp.model.Message;
 import com.messageapp.model.User;
 import com.messageapp.service.AuthService;
 import com.messageapp.service.MessageService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/messages")
@@ -31,47 +41,57 @@ public class MessageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Message> getById(
+        @PathVariable String id,
+        @RequestHeader("Authorization") String authHeader) {
+
         User user = validateUser(authHeader);
-        if (user == null) return unauthorized();
-        try {
-            Message message = messageService.getById(id, user.getId());
-            return ResponseEntity.ok(message);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+
+        if (user == null) {
+            return ResponseEntity.status(401).build();
         }
+
+        Message message = messageService.getById(id, user.getId());
+
+        return ResponseEntity.ok(message);
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody MessageRequest request, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> create(@RequestBody MessageRequest request, 
+        @RequestHeader("Authorization") String authHeader) {
+        
         User user = validateUser(authHeader);
+        
         if (user == null) return unauthorized();
+        
         Message message = messageService.create(request, user.getId());
+        
         return ResponseEntity.ok(message);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody MessageRequest request, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> update(@PathVariable String id, @RequestBody MessageRequest request, 
+        @RequestHeader("Authorization") String authHeader) {
+        
         User user = validateUser(authHeader);
-        if (user == null) return unauthorized();
-        try {
-            Message message = messageService.update(id, request, user.getId());
-            return ResponseEntity.ok(message);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        
+        if (user == null) {
+            throw new UnauthorizedException("Invalid or missing token");
         }
+
+        Message message = messageService.update(id, request, user.getId());
+        
+        return ResponseEntity.ok(message);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Map<String, String>> delete(@PathVariable String id, @RequestHeader("Authorization") String authHeader) {
         User user = validateUser(authHeader);
-        if (user == null) return unauthorized();
-        try {
-            messageService.delete(id, user.getId());
-            return ResponseEntity.ok(Map.of("message", "Message deleted"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        if (user == null) {
+            return unauthorized();
         }
+        messageService.delete(id, user.getId());
+        return ResponseEntity.ok(Map.of("message", "Message deleted"));
     }
 
     private User validateUser(String authHeader) {
