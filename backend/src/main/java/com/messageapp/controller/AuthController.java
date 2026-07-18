@@ -3,7 +3,6 @@ package com.messageapp.controller;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,18 +11,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.messageapp.dto.AuthResponse;
 import com.messageapp.dto.LoginRequest;
 import com.messageapp.dto.RegisterRequest;
-import com.messageapp.security.JwtService;
 import com.messageapp.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
-    private final JwtService jwtService;
 
-    public AuthController(AuthService authService, JwtService jwtService) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
@@ -44,10 +40,5 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-    }
-    
-    @GetMapping("/token-test")
-    public String tokenTest() {
-        return jwtService.generateToken("jose");
     }
 }
