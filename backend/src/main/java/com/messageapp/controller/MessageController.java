@@ -19,6 +19,7 @@ import com.messageapp.model.User;
 import com.messageapp.security.AuthenticatedUserService;
 import com.messageapp.service.MessageService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -50,7 +51,8 @@ public class MessageController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody MessageRequest request, 
+    public ResponseEntity<?> create(
+        @Valid @RequestBody MessageRequest request, 
         @RequestHeader("Authorization") String authHeader) {
         
         User currentUser = authenticatedUserService.getCurrentUser();
@@ -60,7 +62,8 @@ public class MessageController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable String id, @RequestBody MessageRequest request, 
+    public ResponseEntity<?> update(@PathVariable String id, 
+        @Valid @RequestBody MessageRequest request, 
         @RequestHeader("Authorization") String authHeader) {
         
         User currentUser = authenticatedUserService.getCurrentUser();
