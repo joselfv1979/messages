@@ -1,11 +1,16 @@
 package com.messageapp.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record RegisterRequest(
 
+    @Schema(
+        description = "Unique username",
+        example = "john_doe"
+    )
     @NotBlank(message = "Username is required")
     @Size(
         min = 3,
@@ -18,6 +23,10 @@ public record RegisterRequest(
     )
     String username,
 
+    @Schema(
+        description = "User's password",
+        example = "SecurePass123"
+    )
     @NotBlank(message = "Password is required")
     @Size(
         min = 8,
