@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.messageapp.dto.MessageRequest;
-import com.messageapp.model.Message;
+import com.messageapp.dto.MessageResponse;
 import com.messageapp.model.User;
 import com.messageapp.security.AuthenticatedUserService;
 import com.messageapp.service.MessageService;
@@ -40,21 +40,23 @@ class MessageControllerTest {
                 .username("jose")
                 .build();
 
-        Message message1 = Message.builder()
-                .id("message-1")
-                .userId(userId)
-                .title("Title 1")
-                .body("Body 1")
-                .build();
+        MessageResponse message1 = new MessageResponse(
+                "message-1",
+                "Title 1",
+                "Body 1",
+                userId,
+                null,
+                null);
 
-        Message message2 = Message.builder()
-                .id("message-2")
-                .userId(userId)
-                .title("Title 2")
-                .body("Body 2")
-                .build();
+        MessageResponse message2 = new MessageResponse(
+                "message-2",
+                "Title 2",
+                "Body 2",
+                userId,
+                null,
+                null);
 
-        List<Message> messages = List.of(message1, message2);
+        List<MessageResponse> messages = List.of(message1, message2);
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
@@ -91,12 +93,13 @@ class MessageControllerTest {
                 .username("jose")
                 .build();
 
-        Message message = Message.builder()
-                .id(messageId)
-                .userId(userId)
-                .title("Test title")
-                .body("Test body")
-                .build();
+        MessageResponse message = new MessageResponse(
+                messageId,
+                "Test title",
+                "Test body",
+                userId,
+                null,
+                null);
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
@@ -105,10 +108,7 @@ class MessageControllerTest {
                 .thenReturn(message);
 
         // Act
-        var response = messageController.getById(
-                messageId,
-                "Bearer test-token"
-        );
+        var response = messageController.getById(messageId);
 
         // Assert
         assertThat(response.getStatusCode().value())
@@ -140,12 +140,13 @@ class MessageControllerTest {
                 "Test body"
         );
 
-        Message message = Message.builder()
-                .id("message-123")
-                .userId(userId)
-                .title("Test title")
-                .body("Test body")
-                .build();
+        MessageResponse message = new MessageResponse(
+                "message-123",
+                "Test title",
+                "Test body",
+                userId,
+                null,
+                null);
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
@@ -154,14 +155,11 @@ class MessageControllerTest {
                 .thenReturn(message);
 
         // Act
-        var response = messageController.create(
-                request,
-                "Bearer test-token"
-        );
+        var response = messageController.create(request);
 
         // Assert
         assertThat(response.getStatusCode().value())
-                .isEqualTo(200);
+                .isEqualTo(201);
 
         assertThat(response.getBody())
                 .isSameAs(message);
@@ -190,12 +188,13 @@ class MessageControllerTest {
                 "Updated body"
         );
 
-        Message updatedMessage = Message.builder()
-                .id(messageId)
-                .userId(userId)
-                .title("Updated title")
-                .body("Updated body")
-                .build();
+        MessageResponse updatedMessage = new MessageResponse(
+                messageId,
+                "Updated title",
+                "Updated body",
+                userId,
+                null,
+                null);
 
         when(authenticatedUserService.getCurrentUser())
                 .thenReturn(user);
@@ -204,11 +203,7 @@ class MessageControllerTest {
                 .thenReturn(updatedMessage);
 
         // Act
-        var response = messageController.update(
-                messageId,
-                request,
-                "Bearer test-token"
-        );
+        var response = messageController.update(messageId, request);
 
         // Assert
         assertThat(response.getStatusCode().value())
@@ -240,17 +235,13 @@ class MessageControllerTest {
                 .thenReturn(user);
 
         // Act
-        var response = messageController.delete(
-                messageId,
-                "Bearer test-token"
-        );
+        var response = messageController.delete(messageId);
 
         // Assert
         assertThat(response.getStatusCode().value())
-                .isEqualTo(200);
+                .isEqualTo(204);
 
-        assertThat(response.getBody())
-                .containsEntry("message", "Message deleted");
+        assertThat(response.getBody()).isNull();
 
         verify(authenticatedUserService)
                 .getCurrentUser();

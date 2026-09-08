@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.messageapp.dto.MessageRequest;
+import com.messageapp.dto.MessageResponse;
 import com.messageapp.exception.ResourceNotFoundException;
 import com.messageapp.model.Message;
 import com.messageapp.repository.MessageRepository;
@@ -55,12 +56,13 @@ class MessageServiceTest {
                 .thenReturn(messages);
 
         // Act
-        List<Message> result = messageService.getAllByUser(userId);
+        List<MessageResponse> result = messageService.getAllByUser(userId);
 
         // Assert
         assertThat(result)
                 .hasSize(2)
-                .containsExactly(message1, message2);
+                .extracting(MessageResponse::id)
+                .containsExactly("message-1", "message-2");
 
         verify(messageRepository)
                 .findByUserIdOrderByCreatedAtDesc(userId);
@@ -84,10 +86,13 @@ class MessageServiceTest {
                 .thenReturn(Optional.of(message));
 
         // Act
-        Message result = messageService.getById(messageId, userId);
+        MessageResponse result = messageService.getById(messageId, userId);
 
         // Assert
-        assertThat(result).isSameAs(message);
+        assertThat(result.id()).isEqualTo(messageId);
+        assertThat(result.title()).isEqualTo("Test title");
+        assertThat(result.body()).isEqualTo("Test body");
+        assertThat(result.userId()).isEqualTo(userId);
 
         verify(messageRepository).findById(messageId);
     }
@@ -164,10 +169,13 @@ class MessageServiceTest {
                 .thenReturn(savedMessage);
 
         // Act
-        Message result = messageService.create(request, userId);
+        MessageResponse result = messageService.create(request, userId);
 
         // Assert
-        assertThat(result).isSameAs(savedMessage);
+        assertThat(result.id()).isEqualTo("message-123");
+        assertThat(result.userId()).isEqualTo(userId);
+        assertThat(result.title()).isEqualTo("Test title");
+        assertThat(result.body()).isEqualTo("Test body");
 
         verify(messageRepository).save(any(Message.class));
     }
@@ -200,13 +208,12 @@ class MessageServiceTest {
                 .thenReturn(message);
 
         // Act
-        Message result = messageService.update(messageId, request, userId);
+        MessageResponse result = messageService.update(messageId, request, userId);
 
         // Assert
-        assertThat(result).isSameAs(message);
-        assertThat(result.getTitle()).isEqualTo("New title");
-        assertThat(result.getBody()).isEqualTo("New body");
-        assertThat(result.getUpdatedAt()).isNotNull();
+        assertThat(result.title()).isEqualTo("New title");
+        assertThat(result.body()).isEqualTo("New body");
+        assertThat(result.updatedAt()).isNotNull();
 
         verify(messageRepository).findById(messageId);
         verify(messageRepository).save(message);

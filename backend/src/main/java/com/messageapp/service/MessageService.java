@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.messageapp.dto.MessageRequest;
+import com.messageapp.dto.MessageResponse;
 import com.messageapp.exception.ResourceNotFoundException;
 import com.messageapp.model.Message;
 import com.messageapp.repository.MessageRepository;
@@ -18,22 +19,19 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
 
-    public List<Message> getAllByUser(String userId) {
-        return messageRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    public List<MessageResponse> getAllByUser(String userId) {
+        return messageRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(MessageResponse::from)
+                .toList();
     }
 
-    public Message getById(String id, String userId) {
-        Message message = messageRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
-
-        if (!message.getUserId().equals(userId)) {
-            throw new ResourceNotFoundException("Message not found");
-        }
-
-        return message;
+    public MessageResponse getById(String id, String userId) {
+        Message message = getOwnedMessage(id, userId);
+        return MessageResponse.from(message);
     }
 
-    public Message create(MessageRequest request, String userId) {
+    public MessageResponse create(MessageRequest request, String userId) {
 
         Message message = Message.builder()
                 .title(request.title())
@@ -43,23 +41,34 @@ public class MessageService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        return messageRepository.save(message);
+        return MessageResponse.from(messageRepository.save(message));
     }
 
-    public Message update(String id, MessageRequest request, String userId) {
+    public MessageResponse update(String id, MessageRequest request, String userId) {
 
-        Message message = getById(id, userId);
+        Message message = getOwnedMessage(id, userId);
 
         message.setTitle(request.title());
         message.setBody(request.body());
         message.setUpdatedAt(LocalDateTime.now());
 
-        return messageRepository.save(message);
+        return MessageResponse.from(messageRepository.save(message));
     }
 
     public void delete(String id, String userId) {
 
-        Message message = getById(id, userId);
+        Message message = getOwnedMessage(id, userId);
         messageRepository.delete(message);
+    }
+
+    private Message getOwnedMessage(String id, String userId) {
+        Message message = messageRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+
+        if (!message.getUserId().equals(userId)) {
+            throw new ResourceNotFoundException("Message not found");
+        }
+
+        return message;
     }
 }

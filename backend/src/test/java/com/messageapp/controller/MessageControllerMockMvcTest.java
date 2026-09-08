@@ -28,9 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.messageapp.config.SecurityConfig;
 import com.messageapp.dto.MessageRequest;
+import com.messageapp.dto.MessageResponse;
 import com.messageapp.exception.ResourceNotFoundException;
 import com.messageapp.exception.handler.GlobalExceptionHandler;
-import com.messageapp.model.Message;
 import com.messageapp.model.User;
 import com.messageapp.repository.UserRepository;
 import com.messageapp.security.AuthenticatedUserService;
@@ -117,12 +117,13 @@ class MessageControllerMockMvcTest {
 
         String messageId = "message-123";
 
-        Message message = Message.builder()
-                .id(messageId)
-                .userId(user.getId())
-                .title("Test title")
-                .body("Test body")
-                .build();
+        MessageResponse message = new MessageResponse(
+                messageId,
+                "Test title",
+                "Test body",
+                user.getId(),
+                null,
+                null);
 
         when(messageService.getById(messageId, user.getId()))
                 .thenReturn(message);
@@ -141,12 +142,13 @@ class MessageControllerMockMvcTest {
     @Test
     void shouldCreateMessage() throws Exception {
 
-        Message message = Message.builder()
-                .id("message-123")
-                .userId(user.getId())
-                .title("Test title")
-                .body("Test body")
-                .build();
+        MessageResponse message = new MessageResponse(
+                "message-123",
+                "Test title",
+                "Test body",
+                user.getId(),
+                null,
+                null);
 
         when(messageService.create(any(MessageRequest.class), eq(user.getId())))
                 .thenReturn(message);
@@ -162,7 +164,7 @@ class MessageControllerMockMvcTest {
                             }
                             """)
         )
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("message-123"))
                 .andExpect(jsonPath("$.userId").value(user.getId()))
                 .andExpect(jsonPath("$.title").value("Test title"))
@@ -199,12 +201,13 @@ class MessageControllerMockMvcTest {
 
         String messageId = "message-123";
 
-        Message message = Message.builder()
-                .id(messageId)
-                .userId(user.getId())
-                .title("Updated title")
-                .body("Updated body")
-                .build();
+        MessageResponse message = new MessageResponse(
+                messageId,
+                "Updated title",
+                "Updated body",
+                user.getId(),
+                null,
+                null);
 
         when(messageService.update(
                 eq(messageId),
@@ -284,8 +287,7 @@ class MessageControllerMockMvcTest {
                 delete("/api/messages/{id}", messageId)
                         .header("Authorization", "Bearer " + token)
         )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Message deleted"));
+                .andExpect(status().isNoContent());
 
         verify(messageService)
                 .delete(messageId, user.getId());
@@ -318,19 +320,21 @@ class MessageControllerMockMvcTest {
     @Test
     void shouldGetAllMessages() throws Exception {
 
-        Message message1 = Message.builder()
-                .id("message-1")
-                .userId(user.getId())
-                .title("Title 1")
-                .body("Body 1")
-                .build();
+        MessageResponse message1 = new MessageResponse(
+                "message-1",
+                "Title 1",
+                "Body 1",
+                user.getId(),
+                null,
+                null);
 
-        Message message2 = Message.builder()
-                .id("message-2")
-                .userId(user.getId())
-                .title("Title 2")
-                .body("Body 2")
-                .build();
+        MessageResponse message2 = new MessageResponse(
+                "message-2",
+                "Title 2",
+                "Body 2",
+                user.getId(),
+                null,
+                null);
 
         when(messageService.getAllByUser(user.getId()))
                 .thenReturn(java.util.List.of(message1, message2));
