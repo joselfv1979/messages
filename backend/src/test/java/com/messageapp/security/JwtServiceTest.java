@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 
 class JwtServiceTest {
 
-    private static final String SECRET =
-            "this-is-a-test-secret-key-that-is-long-enough-for-hs256";
+    private static final String SECRET
+            = "this-is-a-test-secret-key-that-is-long-enough-for-hs256";
 
     private static final long EXPIRATION = 3600000;
 
-    private final JwtService jwtService =
-            new JwtService(SECRET, EXPIRATION);
+    private final JwtService jwtService
+            = new JwtService(SECRET, EXPIRATION);
 
     @Test
     void shouldGenerateToken() {
@@ -64,18 +64,31 @@ class JwtServiceTest {
     }
 
     @Test
-    void shouldRejectExpiredToken() throws InterruptedException {
+    void shouldRejectExpiredToken() {
 
         // Arrange
-        JwtService shortLivedJwtService =
-                new JwtService(SECRET, 1);
+        JwtService expiredJwtService
+                = new JwtService(SECRET, -1000);
 
-        String token = shortLivedJwtService.generateToken("jose");
-
-        Thread.sleep(10);
+        String token
+                = expiredJwtService.generateToken("jose");
 
         // Act
-        boolean valid = shortLivedJwtService.isTokenValid(token);
+        boolean valid
+                = expiredJwtService.isTokenValid(token);
+
+        // Assert
+        assertThat(valid).isFalse();
+    }
+
+    @Test
+    void shouldRejectInvalidToken() {
+
+        // Arrange
+        String invalidToken = "this-is-not-a-valid-jwt";
+
+        // Act
+        boolean valid = jwtService.isTokenValid(invalidToken);
 
         // Assert
         assertThat(valid).isFalse();
