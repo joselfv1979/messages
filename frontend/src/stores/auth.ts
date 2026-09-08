@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import axios from 'axios'
+import { authService } from '../services/authService'
 import type { AuthResponse } from '../types'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -11,14 +11,14 @@ export const useAuthStore = defineStore('auth', () => {
   const username = computed(() => user.value?.username || '')
 
   async function login(username: string, password: string) {
-    const { data } = await axios.post<AuthResponse>('/api/auth/login', { username, password })
+    const data = await authService.login(username, password)
     user.value = data
     localStorage.setItem('user', JSON.stringify(data))
     return data
   }
 
   async function register(username: string, password: string) {
-    const { data } = await axios.post<AuthResponse>('/api/auth/register', { username, password })
+    const data = await authService.register(username, password)
     user.value = data
     localStorage.setItem('user', JSON.stringify(data))
     return data

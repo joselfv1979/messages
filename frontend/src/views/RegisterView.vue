@@ -23,7 +23,12 @@ async function handleSubmit() {
     await auth.register(username.value, password.value)
     router.push('/')
   } catch (e: any) {
-    error.value = e.response?.data?.error || 'Registration failed'
+    const validation = e.response?.data?.validationErrors as Record<string, string> | undefined
+    if (validation) {
+      error.value = Object.values(validation)[0] || 'Registration failed'
+    } else {
+      error.value = e.response?.data?.message || 'Registration failed'
+    }
   } finally {
     loading.value = false
   }
@@ -41,8 +46,9 @@ async function handleSubmit() {
 
         <form @submit.prevent="handleSubmit" class="space-y-5">
           <div>
-            <label class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Username</label>
+            <label for="register-username" class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Username</label>
             <input
+              id="register-username"
               v-model="username"
               type="text"
               required
@@ -52,8 +58,9 @@ async function handleSubmit() {
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Password</label>
+            <label for="register-password" class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Password</label>
             <input
+              id="register-password"
               v-model="password"
               type="password"
               required
@@ -63,8 +70,9 @@ async function handleSubmit() {
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Confirm Password</label>
+            <label for="register-confirm" class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Confirm Password</label>
             <input
+              id="register-confirm"
               v-model="confirmPassword"
               type="password"
               required
@@ -73,7 +81,7 @@ async function handleSubmit() {
             />
           </div>
 
-          <p v-if="error" class="text-red-500 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded-lg">{{ error }}</p>
+          <p v-if="error" role="alert" class="text-red-500 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded-lg">{{ error }}</p>
 
           <button
             type="submit"

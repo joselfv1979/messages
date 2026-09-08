@@ -17,6 +17,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/messages/:id',
+      name: 'message-detail',
+      component: () => import('../views/MessageDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/messages/:id/edit',
       name: 'edit-message',
       component: () => import('../views/EditMessageView.vue'),
@@ -41,6 +47,14 @@ router.beforeEach((to, from, next) => {
     next({ name: 'login' })
   } else {
     next()
+  }
+})
+
+window.addEventListener('auth:unauthorized', () => {
+  const authStore = useAuthStore()
+  authStore.logout()
+  if (router.currentRoute.value.meta.requiresAuth) {
+    router.push({ name: 'login' })
   }
 })
 

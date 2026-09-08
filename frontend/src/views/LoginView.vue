@@ -19,7 +19,7 @@ async function handleSubmit() {
     await auth.login(username.value, password.value)
     router.push('/')
   } catch (e: any) {
-    error.value = e.response?.data?.error || 'Login failed'
+    error.value = e.response?.data?.message || 'Login failed'
   } finally {
     loading.value = false
   }
@@ -37,8 +37,9 @@ async function handleSubmit() {
 
         <form @submit.prevent="handleSubmit" class="space-y-5">
           <div>
-            <label class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Username</label>
+            <label for="login-username" class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Username</label>
             <input
+              id="login-username"
               v-model="username"
               type="text"
               required
@@ -48,8 +49,9 @@ async function handleSubmit() {
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Password</label>
+            <label for="login-password" class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Password</label>
             <input
+              id="login-password"
               v-model="password"
               type="password"
               required
@@ -58,7 +60,7 @@ async function handleSubmit() {
             />
           </div>
 
-          <p v-if="error" class="text-red-500 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded-lg">{{ error }}</p>
+          <p v-if="error" role="alert" class="text-red-500 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded-lg">{{ error }}</p>
 
           <button
             type="submit"

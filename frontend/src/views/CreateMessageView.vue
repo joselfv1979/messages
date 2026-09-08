@@ -22,7 +22,7 @@ async function handleSubmit() {
     await store.create({ title: title.value, body: body.value })
     router.push('/')
   } catch (e: any) {
-    error.value = e.response?.data?.error || 'Failed to create message'
+    error.value = e.response?.data?.message || 'Failed to create message'
   } finally {
     loading.value = false
   }
@@ -39,8 +39,9 @@ async function handleSubmit() {
     <div class="bg-white/90 dark:bg-navy-800/90 backdrop-blur-sm rounded-2xl border border-navy-200 dark:border-navy-700 p-8 shadow-lg shadow-navy-100/20 dark:shadow-black/30">
       <form @submit.prevent="handleSubmit" class="space-y-6">
         <div>
-          <label class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Title</label>
+          <label for="create-title" class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Title</label>
           <input
+            id="create-title"
             v-model="title"
             type="text"
             required
@@ -50,8 +51,9 @@ async function handleSubmit() {
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Body</label>
+          <label for="create-body" class="block text-sm font-medium text-navy-700 dark:text-navy-300 mb-1.5">Body</label>
           <textarea
+            id="create-body"
             v-model="body"
             required
             rows="6"
@@ -60,7 +62,7 @@ async function handleSubmit() {
           ></textarea>
         </div>
 
-        <p v-if="error" class="text-red-500 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded-lg">{{ error }}</p>
+        <p v-if="error" role="alert" class="text-red-500 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded-lg">{{ error }}</p>
 
         <div class="flex items-center gap-3">
           <button

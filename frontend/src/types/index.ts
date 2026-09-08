@@ -1,20 +1,20 @@
 export interface User {
-  id: number
+  id: string
   username: string
   token: string
 }
 
 export interface Message {
-  id: number
+  id: string
   title: string
   body: string
-  userId: number
+  userId: string
   createdAt: string
   updatedAt: string
 }
 
 export interface AuthResponse {
-  id: number
+  id: string
   username: string
   token: string
 }
